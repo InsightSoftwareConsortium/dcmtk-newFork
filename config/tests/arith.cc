@@ -25,6 +25,11 @@
 //       before this program is used.
 #include "../math.cc"
 
+#ifdef __EMSCRIPTEN__
+  #define DCMTK_UNDEF_SANITIZER
+#endif
+
+#if defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
 // For controlling floating point exceptions on Unix like systems.
 #include <fenv.h>
 
@@ -48,7 +53,7 @@
 // hackish definition of cerr, as we can't depend on
 // OFConsole.
 #define COUT STD_NAMESPACE cerr
-#define COUT STD_NAMESPACE cout
+// #define COUT STD_NAMESPACE cout
 
 // define sigjmp_buf if it isn't already
 #ifndef HAVE_SIGJMP_BUF
@@ -332,7 +337,7 @@ static void provoke_snan()
     _controlfp( _controlfp(0,0) & ~_EM_INVALID, _MCW_EM );
 #elif defined(__APPLE__) && !defined(__aarch64__)
     _MM_SET_EXCEPTION_MASK( _MM_GET_EXCEPTION_MASK() & ~_MM_MASK_INVALID );
-#elif defined(HAVE_PROTOTYPE_FEENABLEEXCEPT)
+#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__) && defined(HAVE_PROTOTYPE_FEENABLEEXCEPT)
     feenableexcept( FE_INVALID );
 #elif defined(HAVE_IEEEFP_H) && !defined(__CYGWIN__)
     // Cygwin unfortunately seems to have <ieeefp.h> but no implementation of fgetmask/fpsetmask
@@ -374,11 +379,11 @@ static int test_snan( STD_NAMESPACE ostream& out, const char* name )
 #ifdef HAVE_WINDOWS_H
     _clearfp();
     _controlfp( _controlfp(0,0) | _EM_INVALID, _MCW_EM );
-#else /* HAVE_WINDOWS_H */
+#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
     feclearexcept( FE_INVALID );
 #if defined(__APPLE__) && !defined(__aarch64__)
     _MM_SET_EXCEPTION_MASK( _MM_GET_EXCEPTION_MASK() | _MM_MASK_INVALID );
-#elif defined(HAVE_PROTOTYPE_FEENABLEEXCEPT)
+#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__) && defined(HAVE_PROTOTYPE_FEENABLEEXCEPT)
     fedisableexcept( FE_INVALID );
 #elif defined(HAVE_IEEEFP_H) && !defined(__CYGWIN__)
     // Cygwin unfortunately seems to have <ieeefp.h> but no implementation of fgetmask/fpsetmask
@@ -472,7 +477,7 @@ static void test_tinyness_before( STD_NAMESPACE ostream& out, const char* name )
 
 #ifdef HAVE_WINDOWS_H
     _clearfp();
-#else
+#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
     feclearexcept( FE_ALL_EXCEPT );
 #endif
 
@@ -484,6 +489,8 @@ static void test_tinyness_before( STD_NAMESPACE ostream& out, const char* name )
         out,
 #ifdef HAVE_WINDOWS_H
         _statusfp() & _EM_UNDERFLOW,
+#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
+        fetestexcept( FE_UNDERFLOW ),
 #else
         fetestexcept( FE_UNDERFLOW ),
 #endif
@@ -500,7 +507,7 @@ static void test_denorm_loss( STD_NAMESPACE ostream& out, const char* name )
 
 #ifdef HAVE_WINDOWS_H
     _clearfp();
-#else
+#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
     feclearexcept( FE_ALL_EXCEPT );
 #endif
 
@@ -511,6 +518,8 @@ static void test_denorm_loss( STD_NAMESPACE ostream& out, const char* name )
         out,
 #ifdef HAVE_WINDOWS_H
         _statusfp() & _EM_UNDERFLOW,
+#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
+        fetestexcept( FE_UNDERFLOW ),
 #else
         fetestexcept( FE_UNDERFLOW ),
 #endif
