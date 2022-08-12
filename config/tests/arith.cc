@@ -56,19 +56,22 @@
 // #define COUT STD_NAMESPACE cout
 
 // define sigjmp_buf if it isn't already
-#ifndef HAVE_SIGJMP_BUF
+#if !defined(HAVE_SIGJMP_BUF) && !defined(__wasi__)
 typedef jmp_buf sigjmp_buf;
 #endif
 
 // longjmp env (jump destination), ugly global var we
 // need to recover from traps.
+#ifndef __wasi__
 sigjmp_buf jbuf;
+#endif
 
 // signal handler that "jumps back in time" to before
 // the error occurred and fixes what has gone wrong
 // in 1985.
 static void capture( int sig )
 {
+#ifndef __wasi__
 #ifndef _WIN32
     // Unix like systems support this natively
     siglongjmp( jbuf, sig );
@@ -77,6 +80,7 @@ static void capture( int sig )
     // only works for floating point exceptions!
     _fpreset();
     longjmp( jbuf, sig );
+#endif
 #endif
 }
 
@@ -128,6 +132,7 @@ template<typename FN>
 static int test_trap( const FN& fn )
 {
     register_signals();
+#ifndef __wasi__
 #ifndef _WIN32
     // On Unix like systems, we use the
     // longjmp-module specifically designed for
@@ -144,6 +149,8 @@ static int test_trap( const FN& fn )
         // caused a trap.
         return 1;
     }
+#endif // __wasi__
+
 #ifdef _MSC_VER
     // On Visual Studio, we use their built-in
     // SEH things, they consider to be C++.
@@ -537,7 +544,9 @@ LONG WINAPI consume_seh_problems( struct _EXCEPTION_POINTERS* )
 {
     _fpreset();
     _clearfp();
+#ifndef __wasi__
     longjmp( jbuf, 0 );
+#endif
     return EXCEPTION_CONTINUE_SEARCH;
 }
 #endif

@@ -317,7 +317,10 @@ endif()
   CHECK_INCLUDE_FILE_CXX("pthread.h" HAVE_PTHREAD_H)
   CHECK_INCLUDE_FILE_CXX("pwd.h" HAVE_PWD_H)
   CHECK_INCLUDE_FILE_CXX("semaphore.h" HAVE_SEMAPHORE_H)
-  # CHECK_INCLUDE_FILE_CXX("setjmp.h" HAVE_SETJMP_H)
+if(CMAKE_TOOLCHAIN_FILE MATCHES "Emscripten" )
+  message("including setjmp.h...since we are using Emscripten")
+  CHECK_INCLUDE_FILE_CXX("setjmp.h" HAVE_SETJMP_H)
+endif()
   CHECK_INCLUDE_FILE_CXX("sstream" HAVE_SSTREAM)
   CHECK_INCLUDE_FILE_CXX("sstream.h" HAVE_SSTREAM_H)
   CHECK_INCLUDE_FILE_CXX("stat.h" HAVE_STAT_H)
@@ -688,7 +691,9 @@ endif()
   CHECK_FUNCTIONWITHHEADER_EXISTS("pclose" "${HEADERS}" HAVE_PCLOSE)
 
   # Signal handling functions
-  # CHECK_FUNCTIONWITHHEADER_EXISTS("sigjmp_buf definition" "setjmp.h" HAVE_SIGJMP_BUF)
+if(CMAKE_TOOLCHAIN_FILE MATCHES "Emscripten" )
+  CHECK_FUNCTIONWITHHEADER_EXISTS("sigjmp_buf definition" "setjmp.h" HAVE_SIGJMP_BUF)
+endif()
 
 if(HAVE_LOCKF AND ANDROID)
   # When Android introduced lockf, they forgot to put the constants like F_LOCK in the
