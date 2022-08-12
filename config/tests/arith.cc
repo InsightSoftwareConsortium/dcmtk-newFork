@@ -25,11 +25,11 @@
 //       before this program is used.
 #include "../math.cc"
 
-#ifdef __EMSCRIPTEN__
+#ifdef NO_FLOAT_EXCEPTIONS
   #define DCMTK_UNDEF_SANITIZER
 #endif
 
-#if defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
+#if defined(HAVE_FENV_H) && !defined(NO_FLOAT_EXCEPTIONS)
 // For controlling floating point exceptions on Unix like systems.
 #include <fenv.h>
 
@@ -344,7 +344,7 @@ static void provoke_snan()
     _controlfp( _controlfp(0,0) & ~_EM_INVALID, _MCW_EM );
 #elif defined(__APPLE__) && !defined(__aarch64__)
     _MM_SET_EXCEPTION_MASK( _MM_GET_EXCEPTION_MASK() & ~_MM_MASK_INVALID );
-#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__) && defined(HAVE_PROTOTYPE_FEENABLEEXCEPT)
+#elif defined(HAVE_FENV_H) && !defined(NO_FLOAT_EXCEPTIONS) && defined(HAVE_PROTOTYPE_FEENABLEEXCEPT)
     feenableexcept( FE_INVALID );
 #elif defined(HAVE_IEEEFP_H) && !defined(__CYGWIN__)
     // Cygwin unfortunately seems to have <ieeefp.h> but no implementation of fgetmask/fpsetmask
@@ -386,11 +386,11 @@ static int test_snan( STD_NAMESPACE ostream& out, const char* name )
 #ifdef HAVE_WINDOWS_H
     _clearfp();
     _controlfp( _controlfp(0,0) | _EM_INVALID, _MCW_EM );
-#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
+#elif defined(HAVE_FENV_H) && !defined(NO_FLOAT_EXCEPTIONS)
     feclearexcept( FE_INVALID );
 #if defined(__APPLE__) && !defined(__aarch64__)
     _MM_SET_EXCEPTION_MASK( _MM_GET_EXCEPTION_MASK() | _MM_MASK_INVALID );
-#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__) && defined(HAVE_PROTOTYPE_FEENABLEEXCEPT)
+#elif defined(HAVE_FENV_H) && !defined(NO_FLOAT_EXCEPTIONS) && defined(HAVE_PROTOTYPE_FEENABLEEXCEPT)
     fedisableexcept( FE_INVALID );
 #elif defined(HAVE_IEEEFP_H) && !defined(__CYGWIN__)
     // Cygwin unfortunately seems to have <ieeefp.h> but no implementation of fgetmask/fpsetmask
@@ -484,7 +484,7 @@ static void test_tinyness_before( STD_NAMESPACE ostream& out, const char* name )
 
 #ifdef HAVE_WINDOWS_H
     _clearfp();
-#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
+#elif defined(HAVE_FENV_H) && !defined(NO_FLOAT_EXCEPTIONS)
     feclearexcept( FE_ALL_EXCEPT );
 #endif
 
@@ -496,7 +496,7 @@ static void test_tinyness_before( STD_NAMESPACE ostream& out, const char* name )
         out,
 #ifdef HAVE_WINDOWS_H
         _statusfp() & _EM_UNDERFLOW,
-#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
+#elif defined(HAVE_FENV_H) && !defined(NO_FLOAT_EXCEPTIONS)
         fetestexcept( FE_UNDERFLOW ),
 #else
         fetestexcept( FE_UNDERFLOW ),
@@ -514,7 +514,7 @@ static void test_denorm_loss( STD_NAMESPACE ostream& out, const char* name )
 
 #ifdef HAVE_WINDOWS_H
     _clearfp();
-#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
+#elif defined(HAVE_FENV_H) && !defined(NO_FLOAT_EXCEPTIONS)
     feclearexcept( FE_ALL_EXCEPT );
 #endif
 
@@ -525,7 +525,7 @@ static void test_denorm_loss( STD_NAMESPACE ostream& out, const char* name )
         out,
 #ifdef HAVE_WINDOWS_H
         _statusfp() & _EM_UNDERFLOW,
-#elif defined(HAVE_FENV_H) && !defined(__EMSCRIPTEN__)
+#elif defined(HAVE_FENV_H) && !defined(NO_FLOAT_EXCEPTIONS)
         fetestexcept( FE_UNDERFLOW ),
 #else
         fetestexcept( FE_UNDERFLOW ),
