@@ -461,7 +461,7 @@ public:
    */
   OFBool freopen(const char *filename, const char *modes)
   {
-#if defined(EXPLICIT_LFS_64) && ! defined(__MINGW32__)
+#if defined(EXPLICIT_LFS_64) && ! defined(__MINGW32__) && !defined(__wasi__)
     // MinGW has EXPLICIT_LFS_64 but no freopen64()
     file_ = :: freopen64(filename, modes, file_);
 #else
@@ -480,7 +480,7 @@ public:
   OFBool tmpfile()
   {
     if (file_) fclose();
-#if defined(EXPLICIT_LFS_64) && ! defined(__MINGW32__)
+#if defined(EXPLICIT_LFS_64) && ! defined(__MINGW32__) && ! defined(__wasi__)
     // MinGW has EXPLICIT_LFS_64 but no tmpfile64()
     file_ = :: tmpfile64();
 #else
