@@ -345,7 +345,9 @@ int main(int argc, char *argv[])
         cmdStr = replaceChars(cmdStr, OFString(FILENAME_PLACEHOLDER), opt_ofname);
 
         // Execute command and return result
+#ifndef __wasi__
         return system(cmdStr.c_str());
+#endif
     }
 
     return EXITCODE_NO_ERROR;
