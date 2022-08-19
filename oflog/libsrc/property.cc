@@ -375,6 +375,11 @@ Properties::get_type_val_worker (ValType & val, log4cplus::tstring const & key)
         return false;
 
     log4cplus::tstring const & prop_val = getProperty (key);
+
+// Disable this part for wasi. If called, function will return false by default as a failure.
+#ifdef __wasi__
+    return false;
+#else
     log4cplus::tistringstream iss (STD_NAMESPACE string(prop_val.c_str(), prop_val.length()));
     ValType tmp_val;
     tchar ch;
@@ -388,6 +393,7 @@ Properties::get_type_val_worker (ValType & val, log4cplus::tstring const & key)
 
     val = tmp_val;
     return true;
+#endif
 }
 
 
