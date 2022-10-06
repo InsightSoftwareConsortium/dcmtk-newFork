@@ -129,18 +129,18 @@ char dcompat_functionDefinedOnlyToStopLinkerMoaning;
 
 
 #ifndef HAVE_FLOCK
-#ifdef macintosh
+#if defined(macintosh) || defined(__wasi__)
 
 // MacOS seems not to support file locking
 
 int dcmtk_flock(int fd, int operation)
 {
   DCMNET_WARN("Unsupported flock(fd[" << fd << "],operation[0x"
-    << hex << operation << "])");
+    << std::hex << operation << "])");
   return 0;
 }
 
-#else /* macintosh */
+#else /* macintosh || __wasi__ */
 #ifdef _WIN32
 
 #ifndef USE__LOCKING
@@ -287,7 +287,7 @@ int dcmtk_flock(int fd, int operation)
 }
 
 #endif /* _WIN32 */
-#endif /* macintosh */
+#endif /* macintosh || __wasi__ */
 #endif /* HAVE_FLOCK */
 
 #ifndef HAVE_GETHOSTNAME
@@ -301,7 +301,7 @@ int gethostname(char* name, int namelen)
     int rc;
 
     memset(&uts, 0, sizeof(uts));
-    rc = utsname(&uts);
+    rc = uname(&uts);
     if (rc >= 0) {
 	strncpy(name, uts.nodename, namelen);
 	rc = 0;
