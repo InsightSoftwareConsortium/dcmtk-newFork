@@ -149,9 +149,8 @@ static int test_trap( const FN& fn )
         // caused a trap.
         return 1;
     }
-#endif // __wasi__
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
     // On Visual Studio, we use their built-in
     // SEH things, they consider to be C++.
     __try
@@ -175,6 +174,7 @@ static int test_trap( const FN& fn )
     // means "normal exception".
     catch(...){return 2;}
 #endif
+#endif // __wasi__
     // Nothing happened, so we return 0, for
     // "nothing happened". Note: since MinGW's
     // crazy SEH things are crazy, MinGW will always
