@@ -248,6 +248,7 @@ _citrus_map_file(struct _citrus_region * r,
         goto error;
     }
 
+#ifndef __wasi__
 #ifdef MAP_FILE
     head = mmap(NULL, (size_t)st.st_size, PROT_READ, MAP_FILE|MAP_PRIVATE, fd, (off_t)0);
 #else
@@ -257,6 +258,7 @@ _citrus_map_file(struct _citrus_region * r,
         ret = errno;
         goto error;
     }
+#endif // __wasi__
     _citrus_region_init(r, head, (size_t)st.st_size);
     _citrus_set_is_file(r);
     oficonv_log(1 /* debug */, "Opened oficonv data file '", path, "'");
@@ -270,7 +272,9 @@ _citrus_unmap_file(struct _citrus_region *r)
 {
     if (_citrus_region_head(r) != NULL) {
         if ( _citrus_is_file(r)) {
+#ifndef __wasi__
             (void)munmap(_citrus_region_head(r), _citrus_region_size(r));
+#endif
         }
         _citrus_region_init(r, NULL, 0);
     }
